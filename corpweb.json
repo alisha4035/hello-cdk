@@ -168,6 +168,9 @@
                         "Ref": "WebserversSG"
                     }
                 ],
+                "UserData": {
+                    "Fn::Base64": "#!/bin/bash\nyum update -y\nyum install -y git httpd php\nservice httpd start\nchkconfig httpd on\naws s3 cp s3://seis665-public/index.php /var/www/html/"
+                },
                 "Tags": [
                     {
                         "Key": "Name",
@@ -197,6 +200,9 @@
                         "Ref": "WebserversSG"
                     }
                 ],
+                "UserData": {
+                    "Fn::Base64": "#!/bin/bash\nyum update -y\nyum install -y git httpd php\nservice httpd start\nchkconfig httpd on\naws s3 cp s3://seis665-public/index.php /var/www/html/"
+                },
                 "Tags": [
                     {
                         "Key": "Name",
@@ -233,6 +239,7 @@
         "EngineeringLB": {
             "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
             "Properties": {
+                "Scheme": "internet-facing",
                 "SecurityGroups": [
                     {
                         "Ref": "WebserversSG"
@@ -258,9 +265,39 @@
                 "Port": 80,
                 "Protocol": "HTTP",
                 "TargetType": "instance",
+                "Targets": [
+                    {
+                        "Id": {
+                            "Ref": "Web1"
+                        }
+                    },
+                    {
+                        "Id": {
+                            "Ref": "Web2"
+                        }
+                    }
+                ],
                 "VpcId": {
                     "Ref": "EngineeringVpc"
                 }
+            }
+        },
+        "EngineeringListner": {
+            "Type": "AWS::ElasticLoadBalancingV2::Listener",
+            "Properties": {
+                "DefaultActions": [
+                    {
+                        "TargetGroupArn": {
+                            "Ref": "EngineeringWebservers"
+                        },
+                        "Type": "forward"
+                    }
+                ],
+                "LoadBalancerArn": {
+                    "Ref": "EngineeringLB"
+                },
+                "Port": 80,
+                "Protocol": "HTTP"
             }
         },
         "WebInstanceRole": {
@@ -313,7 +350,7 @@
                     ]
                 ]
             },
-            "Description": "Webserver URL"
+            "Description": "Loadbalancer URL"
         }
     }
 }

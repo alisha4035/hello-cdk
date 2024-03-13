@@ -62,7 +62,7 @@ class CdkLabWebServerStack(Stack):
         rds_subnet_group = rds.SubnetGroup(self, "RdsSubnetGroup",
                                           vpc = cdk_lab_vpc,
                                           description="Subnet group for RDS",
-                                          vpc_subnets=cdk_lab_vpc.select_subnets(ec2.SubnetType.PRIVATE))
+                                          vpc_subnets=cdk_lab_vpc.select_subnets(ec2.SubnetType.PRIVATE_WITH_EGRESS))
                                             
                                             
         # Web instances
@@ -84,10 +84,10 @@ class CdkLabWebServerStack(Stack):
         #A RDS instance with MySQL engine with all private subnets as its subnet group
         
         cdk_lab_rds_instance = rds.DatabaseInstance(self, "RdsInstance",
-                                                    engine=rds.DatabaseInsatanceEngine.mysql(version=rds.MysqlEngineVersion.VER_8_0_23),
+                                                    engine=rds.DatabaseInstanceEngine.mysql(version=rds.MysqlEngineVersion.VER_8_0_23),
                                                     instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2,ec2.InstanceSize.MICRO),
                                                     vpc=cdk_lab_vpc,
-                                                    vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE),
+                                                    vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
                                                     subnet_groups=rds_subnet_group,
                                                     security_groups=[rds_lab_web_server_sg],
                                                     removal_policy=cdk_lab_vpc.RemovalPolicy.DESTROY)
